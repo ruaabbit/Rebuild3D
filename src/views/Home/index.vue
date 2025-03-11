@@ -6,6 +6,7 @@
     <Section3 />
     <Section4 />
     <Section5 />
+    <Section6 />
   </div>
   <Nav
     :sections="sections"
@@ -22,6 +23,7 @@ import Section2 from "@/components/sections/Section2.vue";
 import Section3 from "@/components/sections/Section3.vue";
 import Section4 from "@/components/sections/Section4.vue";
 import Section5 from "@/components/sections/Section5.vue";
+import Section6 from "@/components/sections/Section6.vue";
 import Nav from "@/components/Nav.vue";
 
 const currentSection = ref(0);
@@ -31,6 +33,7 @@ const sections = ref([
   { title: "第三页" },
   { title: "第四页" },
   { title: "第五页" },
+  { title: "第六页" },
 ]);
 
 // 添加一个标志位表示是否正在滚动动画中
