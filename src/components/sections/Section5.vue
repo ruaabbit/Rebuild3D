@@ -55,7 +55,9 @@
           <div class="upload-hint">支持多张图片上传</div>
         </label>
         <div class="selected-files" v-if="selectedFiles.length > 0">
-          已选择 {{ selectedFiles.length }} 张图片
+          <div class="selected-text">
+            已选择 {{ selectedFiles.length }} 张图片
+          </div>
           <button class="upload-button" @click="uploadImages">开始上传</button>
         </div>
       </div>
@@ -91,6 +93,7 @@ const selectedFiles = ref([]);
 const taskId = ref("");
 const resultData = ref(null);
 const pollingInterval = ref(null);
+const uploadId = ref("");
 
 const handleFileUpload = (event) => {
   selectedFiles.value = Array.from(event.target.files);
@@ -102,7 +105,7 @@ const uploadImages = async () => {
   try {
     const formData = new FormData();
     selectedFiles.value.forEach((file, index) => {
-      formData.append(`image_${index}`, file);
+      formData.append(`files`, file); // 使用 'files' 作为键名
     });
 
     const response = await fetch(`${API_BASE_URL}/upload_images/`, {
@@ -111,6 +114,11 @@ const uploadImages = async () => {
     });
 
     if (!response.ok) throw new Error("上传图片失败");
+
+    const data = await response.json();
+    uploadId.value = data.upload_id || "";
+
+    if (!uploadId.value) throw new Error("获取上传ID失败");
 
     currentStep.value = 2;
     organizeImages();
@@ -122,17 +130,28 @@ const uploadImages = async () => {
 
 const organizeImages = async () => {
   try {
+    const formData = new FormData();
+    formData.append("upload_id", uploadId.value);
+
+    // 可选：添加自定义文件夹名称
+    // formData.append('custom_folder_name', '自定义名称');
+
     const response = await fetch(`${API_BASE_URL}/organize_images/`, {
       method: "POST",
+      body: formData,
     });
 
     if (!response.ok) throw new Error("组织图片失败");
 
     const data = await response.json();
-    const projpath = data.projpath || "default_path"; // 假设接口返回项目路径
+    console.log(data);
+    const projpath = data.projpath || "";
+    const images_path = data.images_path || "";
+
+    if (!projpath || !images_path) throw new Error("获取路径失败");
 
     currentStep.value = 3;
-    submitTask(projpath);
+    submitTask(projpath, images_path);
   } catch (error) {
     console.error("组织图片时出错:", error);
     alert("组织图片失败，请重试");
@@ -140,14 +159,22 @@ const organizeImages = async () => {
   }
 };
 
-const submitTask = async (projpath) => {
+const submitTask = async (projpath, images_path) => {
   try {
+    const requestBody = {
+      projpath,
+      cameraModel: "SIMPLE_PINHOLE",
+      images_path: images_path,
+      single_camera: true,
+      model_name: "checkpoint_1044000",
+    };
+
     const response = await fetch(`${API_BASE_URL}/run_colmap/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ projpath }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) throw new Error("提交任务失败");
@@ -179,12 +206,18 @@ const checkResult = async () => {
 
     const data = await response.json();
 
-    // 假设API返回的状态字段是status，完成状态为"completed"
-    if (data.status === "completed" || data.result) {
+    // 根据API定义的状态字段检查任务状态
+    if (data.status === "completed") {
       clearInterval(pollingInterval.value);
       resultData.value = data;
       currentStep.value = 4;
+    } else if (data.status === "failed") {
+      clearInterval(pollingInterval.value);
+      console.error("任务处理失败:", data.error);
+      alert(`处理失败: ${data.error || "未知错误"}`);
+      currentStep.value = 1;
     }
+    // "processing" 状态继续轮询
   } catch (error) {
     console.error("获取结果时出错:", error);
     // 出错时不要停止轮询，继续尝试
@@ -365,6 +398,10 @@ const resetProcess = () => {
       &:hover {
         background-color: color.adjust($theme-color, $lightness: -10%);
       }
+    }
+
+    .selected-text {
+      color: $theme-color;
     }
   }
 }
