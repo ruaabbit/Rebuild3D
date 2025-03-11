@@ -79,69 +79,70 @@
       <div class="header">
         <h1>相关论文</h1>
       </div>
+      <div class="scrollable-container">
+        <div class="paper-container">
+          <!-- 第一篇论文 -->
+          <div class="paper-item">
+            <div class="paper-title">
+              <p>
+                1. Geometry-enhanced attentive multi-view stereo for challenging
+                matching scenarios, TCSVT, Y Liu, Q Cai, C Wang, J Yang, H Fan,
+                J Dong
+              </p>
+              <a href="https://github.com/yimei910110/GA-MVS" target="_blank"
+                ><img class="icon" src="@/assets/icons/github.svg" alt="github"
+              /></a>
+            </div>
+            <div class="paper-image">
+              <img src="@/assets/imgs/paper1.png" alt="论文1截图" />
+            </div>
+          </div>
 
-      <div class="paper-container">
-        <!-- 第一篇论文 -->
-        <div class="paper-item">
-          <div class="paper-title">
-            <p>
-              1. Geometry-enhanced attentive multi-view stereo for challenging
-              matching scenarios, TCSVT, Y Liu, Q Cai, C Wang, J Yang, H Fan, J
-              Dong
-            </p>
-            <a href="https://github.com/yimei910110/GA-MVS" target="_blank"
-              ><img class="icon" src="@/assets/icons/github.svg" alt="github"
-            /></a>
+          <!-- 第二篇论文 -->
+          <div class="paper-item">
+            <div class="paper-title">
+              <p>
+                2. Deep color compensation for generalized underwater image
+                enhancement, TCSVT, Y Rao, W Liu, K Li, H Fan, S Wang, J Dong
+              </p>
+              <a href="https://github.com/Ray2OUC/P2CNet" target="_blank"
+                ><img class="icon" src="@/assets/icons/github.svg" alt="github"
+              /></a>
+            </div>
+            <div class="paper-image">
+              <img src="@/assets/imgs/paper2.png" alt="论文2截图" />
+            </div>
           </div>
-          <div class="paper-image">
-            <img src="@/assets/imgs/paper1.png" alt="论文1截图" />
-          </div>
-        </div>
 
-        <!-- 第二篇论文 -->
-        <div class="paper-item">
-          <div class="paper-title">
-            <p>
-              2. Deep color compensation for generalized underwater image
-              enhancement, TCSVT, Y Rao, W Liu, K Li, H Fan, S Wang, J Dong
-            </p>
-            <a href="https://github.com/Ray2OUC/P2CNet" target="_blank"
-              ><img class="icon" src="@/assets/icons/github.svg" alt="github"
-            /></a>
+          <!-- 第三篇论文 -->
+          <div class="paper-item">
+            <div class="paper-title">
+              <p>
+                3. Learning general descriptors for image matching with
+                regression feedback, TCSVT, Y Rao, Y Ju, C Li, E Rigall, J Yang,
+                H Fan, J Dong
+              </p>
+              <a href="https://github.com/Ray2OUC/AANet" target="_blank"
+                ><img class="icon" src="@/assets/icons/github.svg" alt="github"
+              /></a>
+            </div>
+            <div class="paper-image">
+              <img src="@/assets/imgs/paper3.png" alt="论文3截图" />
+            </div>
           </div>
-          <div class="paper-image">
-            <img src="@/assets/imgs/paper2.png" alt="论文2截图" />
-          </div>
-        </div>
 
-        <!-- 第三篇论文 -->
-        <div class="paper-item">
-          <div class="paper-title">
-            <p>
-              3. Learning general descriptors for image matching with regression
-              feedback, TCSVT, Y Rao, Y Ju, C Li, E Rigall, J Yang, H Fan, J
-              Dong
-            </p>
-            <a href="https://github.com/Ray2OUC/AANet" target="_blank"
-              ><img class="icon" src="@/assets/icons/github.svg" alt="github"
-            /></a>
-          </div>
-          <div class="paper-image">
-            <img src="@/assets/imgs/paper3.png" alt="论文3截图" />
-          </div>
-        </div>
-
-        <!-- 第四篇论文 -->
-        <div class="paper-item">
-          <div class="paper-title">
-            <p>
-              4. LaFea: Learning latent representation beyond feature for
-              universal domain adaptation, TCSVT, Q Lv, Y Li, J Dong, Z Guo
-            </p>
-            <!-- <a href="#" target="_blank"><img class="icon" src="@/assets/icons/github.svg" alt="github"></a> -->
-          </div>
-          <div class="paper-image last">
-            <img src="@/assets/imgs/paper4.png" alt="论文4截图" />
+          <!-- 第四篇论文 -->
+          <div class="paper-item">
+            <div class="paper-title">
+              <p>
+                4. LaFea: Learning latent representation beyond feature for
+                universal domain adaptation, TCSVT, Q Lv, Y Li, J Dong, Z Guo
+              </p>
+              <!-- <a href="#" target="_blank"><img class="icon" src="@/assets/icons/github.svg" alt="github"></a> -->
+            </div>
+            <div class="paper-image last">
+              <img src="@/assets/imgs/paper4.png" alt="论文4截图" />
+            </div>
           </div>
         </div>
       </div>
@@ -256,11 +257,15 @@ const sections = ref([
   { title: "在线重建" }, // 新增的页面
 ]);
 
-// 节流函数
+// 添加一个标志位表示是否正在滚动动画中
+const isScrolling = ref(false);
+
+// 修改后的节流函数，增加对正在滚动状态的判断
 const throttle = (func, wait) => {
   let timeout = null;
   return (...args) => {
-    if (!timeout) {
+    // 如果正在滚动或已有定时器，则不触发
+    if (!timeout && !isScrolling.value) {
       func.apply(this, args);
       timeout = setTimeout(() => {
         timeout = null;
@@ -269,35 +274,47 @@ const throttle = (func, wait) => {
   };
 };
 
-// 滚动处理函数
+// 修改滚动处理函数，添加滚动量阈值
 const handleScroll = (event) => {
+  // 增加滚动阈值，忽略轻微滚动
+  const scrollThreshold = 20;
+  if (Math.abs(event.deltaY) < scrollThreshold) return;
+
   if (event.deltaY > 0) {
     // 向下滚动
     if (currentSection.value < sections.value.length - 1) {
       currentSection.value++;
+      scrollToSection(currentSection.value);
     }
   } else {
     // 向上滚动
     if (currentSection.value > 0) {
       currentSection.value--;
+      scrollToSection(currentSection.value);
     }
   }
-  scrollToSection(currentSection.value);
 };
 
-// 滚动到指定页面
+// 修改滚动到指定页面的函数
 const scrollToSection = (index) => {
+  isScrolling.value = true; // 设置正在滚动标志
   currentSection.value = index;
   const sectionId = `section${index + 1}`;
   document
     .getElementById(`section${index + 1}`)
     .scrollIntoView({ behavior: "smooth" });
+
   // 更新地址栏的锚点
   history.replaceState(null, "", `#${sectionId}`);
+
+  // 等待滚动动画完成后重置标志
+  setTimeout(() => {
+    isScrolling.value = false;
+  }, 500); // 动画时间略长于节流时间
 };
 
-// 使用节流限制滚动事件
-const throttledScroll = throttle(handleScroll, 500);
+// 使用修改后的节流函数
+const throttledScroll = throttle(handleScroll, 300);
 
 const handleTouchStart = (event) => {
   touchStartY.value = event.touches[0].clientY;
@@ -355,7 +372,8 @@ onMounted(() => {
     }
   });
 
-  window.addEventListener("wheel", throttledScroll);
+  // 为滚轮事件使用 passive 选项提高性能
+  window.addEventListener("wheel", throttledScroll, { passive: true });
   // 添加触摸事件支持
   window.addEventListener("touchstart", handleTouchStart);
   window.addEventListener("touchend", handleTouchEnd);
@@ -547,6 +565,14 @@ $theme-color: #00796b;
     margin: 0 5px;
   }
 }
+
+.container {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
 .section {
   width: 100%;
   height: 100vh;
@@ -556,15 +582,25 @@ $theme-color: #00796b;
   font-size: 2em;
   color: white;
   transition: background-color 0.5s ease;
-  overflow-x: hidden; // 防止水平滚动条
+  overflow: hidden; // 防止任何方向的滚动条
   padding: 20px;
   box-sizing: border-box;
+  position: relative;
 
   @include respond-to("medium") {
     font-size: 1.5em;
-    height: auto;
-    min-height: 100vh;
+    height: 100vh; // 始终保持全屏高度，移除auto和min-height设置
   }
+}
+
+// 内容区域需要可滚动时的样式
+.scrollable-content {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  -webkit-overflow-scrolling: touch; // 增强iOS的滚动体验
 }
 
 #section1 {
@@ -877,7 +913,19 @@ $theme-color: #00796b;
 #section4 {
   background: linear-gradient(to right, #e0f7fa, #80deea);
   flex-direction: column;
+
   padding: 40px 20px;
+
+  .header {
+    padding: 20px;
+    flex-shrink: 0;
+  }
+
+  .scrollable-container {
+    overflow-y: auto;
+    padding: 0 20px 20px 20px;
+    -webkit-overflow-scrolling: touch;
+  }
 
   .header h1 {
     font-size: 36px;
@@ -1292,4 +1340,12 @@ $theme-color: #00796b;
 // .nav-button.active::after {
 //     opacity: 1;
 // }
+
+:global(html),
+:global(body) {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+}
 </style>
