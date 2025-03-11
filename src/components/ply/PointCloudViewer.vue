@@ -96,19 +96,29 @@ onMounted(async () => {
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
 
+    // 计算最佳相机距离
     const maxDim = Math.max(size.x, size.y, size.z);
     const fov = camera.fov * (Math.PI / 180);
-    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-    cameraZ *= 1.5; // 增加一些距离，使模型完全可见
+    let cameraDistance = Math.abs(maxDim / Math.sin(fov / 2));
 
-    camera.position.set(center.x, center.y, center.z + cameraZ);
+    // 设置相机位置在模型正前方
+    const cameraDirection = new THREE.Vector3(1, 0.5, 1).normalize();
+    camera.position
+      .copy(center)
+      .addScaledVector(cameraDirection, cameraDistance);
     camera.lookAt(center);
 
     // 设置控制器的目标为模型中心
-    controls.target.set(center.x, center.y, center.z);
+    controls.target.copy(center);
+
+    // 更新相机和控制器
+    camera.near = cameraDistance * 0.001;
+    camera.far = cameraDistance * 100;
+    camera.updateProjectionMatrix();
     controls.update();
 
     loaded.value = true;
+    console.log("模型加载完成");
   } catch (err) {
     error.value = `加载模型失败: ${err.message}`;
     console.error("加载模型错误:", err);
@@ -149,9 +159,8 @@ watch(
 );
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .viewer-container {
-  width: 100%;
   height: 500px;
   background-color: #f0f0f0;
   border-radius: 8px;

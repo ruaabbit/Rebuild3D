@@ -52,7 +52,7 @@
 import PointCloudViewer from "@/components/ply/PointCloudViewer.vue";
 import { ref } from "vue";
 
-const modelPath = ref("model.ply");
+const modelPath = ref("/model.ply");
 const autoRotate = ref(true);
 const backgroundColor = ref("#f0f0f0");
 </script>
