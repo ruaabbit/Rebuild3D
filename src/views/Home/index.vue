@@ -123,11 +123,10 @@ onMounted(() => {
   // 初始化时检查地址栏的锚点
   const hash = window.location.hash;
   if (hash) {
-    const sectionId = hash.substring(1); // 去掉 # 号
-    const index = sections.value.findIndex(
-      (section) => `section${section.id}` === sectionId
-    );
-    if (index !== -1) {
+    const sectionId = hash.substring(1);
+    // 修复: 直接比较 sectionId 和 'sectionX'
+    const index = parseInt(sectionId.replace("section", "")) - 1;
+    if (index >= 0 && index < sections.value.length) {
       currentSection.value = index;
       scrollToSection(index);
     }
@@ -137,11 +136,10 @@ onMounted(() => {
   window.addEventListener("hashchange", () => {
     const hash = window.location.hash;
     if (hash) {
-      const sectionId = hash.substring(1); // 去掉 # 号
-      const index = sections.value.findIndex(
-        (section) => `section${section.id}` === sectionId
-      );
-      if (index !== -1) {
+      const sectionId = hash.substring(1);
+      // 修复: 直接比较 sectionId 和 'sectionX'
+      const index = parseInt(sectionId.replace("section", "")) - 1;
+      if (index >= 0 && index < sections.value.length) {
         currentSection.value = index;
         scrollToSection(index);
       }
