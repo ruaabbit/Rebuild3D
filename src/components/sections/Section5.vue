@@ -75,6 +75,13 @@
 
       <div class="result-area" v-else-if="currentStep === 4">
         <div class="result-header">处理完成</div>
+        <div v-if="resultData?.model_exists" class="model-viewer">
+          <PointCloudViewer
+            :modelPath="API_BASE_URL + '/static/' + resultData.model_path"
+            :height="400"
+            :backgroundColor="'#f0f0f0'"
+          />
+        </div>
         <div class="result-display">
           <pre>{{ JSON.stringify(resultData, null, 2) }}</pre>
         </div>
@@ -85,7 +92,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
+import PointCloudViewer from "@/components/pointcloud/PointCloudViewer.vue";
 
 const API_BASE_URL = "http://117.50.81.60:8000";
 const currentStep = ref(1);
@@ -484,6 +492,15 @@ const resetProcess = () => {
     &:hover {
       background-color: color.adjust($theme-color, $lightness: -10%);
     }
+  }
+
+  .model-viewer {
+    width: 100%;
+    margin: 20px 0;
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 }
 </style>
