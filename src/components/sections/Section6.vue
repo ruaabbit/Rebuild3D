@@ -7,53 +7,21 @@
       <p class="description">
         通过我们的三维重建技术，生成的精确点云模型可以实现在线预览和交互
       </p>
+
       <PointCloudViewer
-        :model-path="modelPath"
-        :auto-rotate="autoRotate"
-        :background-color="backgroundColor"
+        :modelPath="modelPath"
+        :height="600"
+        :backgroundColor="backgroundColor"
       />
-      <div class="controls">
-        <div class="control-group">
-          <label>背景颜色：</label>
-          <div class="color-options">
-            <button
-              class="color-btn"
-              :class="{ active: backgroundColor === '#f0f0f0' }"
-              @click="backgroundColor = '#f0f0f0'"
-              style="background-color: #f0f0f0"
-            ></button>
-            <button
-              class="color-btn"
-              :class="{ active: backgroundColor === '#000000' }"
-              @click="backgroundColor = '#000000'"
-              style="background-color: #000000"
-            ></button>
-            <button
-              class="color-btn"
-              :class="{ active: backgroundColor === '#e0f7fa' }"
-              @click="backgroundColor = '#e0f7fa'"
-              style="background-color: #e0f7fa"
-            ></button>
-          </div>
-        </div>
-        <div class="control-group">
-          <label>自动旋转：</label>
-          <label class="switch">
-            <input type="checkbox" v-model="autoRotate" />
-            <span class="slider round"></span>
-          </label>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import PointCloudViewer from "@/components/ply/PointCloudViewer.vue";
 import { ref } from "vue";
+import PointCloudViewer from "@/components/pointcloud/PointCloudViewer.vue";
 
 const modelPath = ref("/model.ply");
-const autoRotate = ref(true);
 const backgroundColor = ref("#f0f0f0");
 </script>
 
@@ -85,6 +53,7 @@ const backgroundColor = ref("#f0f0f0");
     font-size: 18px;
     text-align: center;
     margin-bottom: 25px;
+    color: $theme-color;
 
     @include respond-to("medium") {
       font-size: 16px;
