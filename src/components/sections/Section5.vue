@@ -95,7 +95,7 @@
 import { ref } from "vue";
 import PointCloudViewer from "@/components/pointcloud/PointCloudViewer.vue";
 
-const API_BASE_URL = "http://117.50.81.60:8000";
+const API_BASE_URL = "https://api.oucvisionlab.com:20443";
 const currentStep = ref(1);
 const selectedFiles = ref([]);
 const taskId = ref("");
