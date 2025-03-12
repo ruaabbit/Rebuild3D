@@ -1,7 +1,7 @@
 <template>
   <div class="section" id="section1">
     <h1>一站式解决水下三维重建领域计算需求的开源平台</h1>
-    <a href="#" class="button" @click="scrollToSection(1)">了解更多</a>
+    <a href="#" class="button" @click.prevent="() => $emit('navigate', 1)">了解更多</a>
     <div class="images">
       <img class="image" src="@/assets/imgs/img1.png" alt="Image 1" />
       <div class="arrow-container">
@@ -11,6 +11,10 @@
     </div>
   </div>
 </template>
+
+<script setup>
+defineEmits(['navigate']);
+</script>
 
 <style scoped lang="scss">
 #section1 {

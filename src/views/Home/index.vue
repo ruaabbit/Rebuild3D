@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <ContactUs />
-    <Section1 />
+    <Section1 @navigate="scrollToSection" />
     <Section2 />
     <Section3 />
     <Section4 />
