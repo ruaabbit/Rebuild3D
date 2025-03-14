@@ -68,9 +68,14 @@
       </div>
 
       <div class="processing-area" v-else-if="currentStep === 3">
-        <div class="status-message">已提交任务，处理中...</div>
+        <div class="status-message">{{ statusMessage }}</div>
         <div class="progress-indicator"></div>
-        <div class="task-id">任务ID: {{ taskId }}</div>
+        <div class="task-info">
+          <div class="task-id">任务ID: {{ taskId }}</div>
+          <div v-if="queuePosition" class="queue-position">
+            队列位置: {{ queuePosition }}
+          </div>
+        </div>
       </div>
 
       <div class="result-area" v-else-if="currentStep === 4">
@@ -102,6 +107,8 @@ const taskId = ref("");
 const resultData = ref(null);
 const pollingInterval = ref(null);
 const uploadId = ref("");
+const statusMessage = ref("已提交任务，排队等待中...");
+const queuePosition = ref(null);
 
 const handleFileUpload = (event) => {
   selectedFiles.value = Array.from(event.target.files);
@@ -189,8 +196,12 @@ const submitTask = async (projpath, images_path) => {
 
     const data = await response.json();
     taskId.value = data.task_id || "未知任务ID";
+    queuePosition.value = data.queue_position;
 
-    // 开始轮询获取结果
+    if (queuePosition.value) {
+      statusMessage.value = `任务已加入队列，当前位置: ${queuePosition.value}`;
+    }
+
     startPolling();
   } catch (error) {
     console.error("提交任务时出错:", error);
@@ -214,7 +225,15 @@ const checkResult = async () => {
 
     const data = await response.json();
 
-    // 根据API定义的状态字段检查任务状态
+    // 更新队列位置和状态信息
+    if (data.queue_position) {
+      queuePosition.value = data.queue_position;
+      statusMessage.value = `任务排队中，当前位置: ${data.queue_position}`;
+    } else if (data.status === "processing") {
+      queuePosition.value = null;
+      statusMessage.value = "任务正在处理中...";
+    }
+
     if (data.status === "completed") {
       clearInterval(pollingInterval.value);
       resultData.value = data;
@@ -237,6 +256,8 @@ const resetProcess = () => {
   selectedFiles.value = [];
   taskId.value = "";
   resultData.value = null;
+  queuePosition.value = null;
+  statusMessage.value = "已提交任务，处理中...";
   if (pollingInterval.value) {
     clearInterval(pollingInterval.value);
     pollingInterval.value = null;
@@ -434,10 +455,17 @@ const resetProcess = () => {
     animation: spin 1s linear infinite;
   }
 
-  .task-id {
-    font-size: 14px;
-    color: #757575;
-    margin-top: 10px;
+  .task-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    .task-id,
+    .queue-position {
+      font-size: 14px;
+      color: #757575;
+    }
   }
 }
 
